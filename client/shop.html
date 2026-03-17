@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NEXUS VR — Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="./js/three.min.js"></script>
+<style>
+/* ══════════════════════════════════════
+   TOKENS
+══════════════════════════════════════ */
+:root{
+  --bg:#07070f;--white:#F0EDE6;--neon:#00FFB3;
+  --pink:#FF2D6B;--gold:#FFD166;--purple:#7B5CFF;
+  --glass:rgba(255,255,255,.05);--border:rgba(255,255,255,.1);
+  --font-d:'Syne',sans-serif;--font-m:'DM Mono',monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#000;color:var(--white);font-family:var(--font-d);overflow:hidden;width:100vw;height:100vh;}
+
+/* ── Canvas ──────────────────────────────── */
+#vr-canvas-container{position:fixed;inset:0;z-index:0;}
+#vr-canvas-container canvas{display:block;}
+#css2d-container{position:fixed;inset:0;z-index:1;pointer-events:none;}
+
+/* ── Fade overlay ────────────────────────── */
+#vrFadeOverlay{position:fixed;inset:0;background:#000;z-index:5;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+
+/* ── Grain ───────────────────────────────── */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.022;pointer-events:none;z-index:9999;}
+
+/* ══════════════════════════════════════
+   HUD — TOP BAR
+══════════════════════════════════════ */
+#vrHUD{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;
+  background:linear-gradient(to bottom,rgba(0,0,0,.72),transparent);
+  pointer-events:none;
+}
+#vrHUD>*{pointer-events:all;}
+.hud-left{display:flex;align-items:center;gap:10px;}
+.hud-indicator{width:7px;height:7px;border-radius:50%;background:var(--neon);box-shadow:0 0 8px var(--neon);animation:blink 2s ease infinite;}
+@keyframes blink{0%,100%{opacity:1;}55%{opacity:.2;}}
+#vrShopName{font-size:.95rem;font-weight:800;letter-spacing:-.01em;}
+.hud-right{display:flex;align-items:center;gap:9px;}
+.hud-btn{
+  padding:7px 14px;background:rgba(0,0,0,.55);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:3px;
+  color:var(--white);font-size:.72rem;font-weight:700;font-family:var(--font-d);
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .18s;position:relative;
+}
+.hud-btn:hover{border-color:var(--neon);color:var(--neon);}
+.cart-badge{
+  position:absolute;top:-6px;right:-6px;background:var(--pink);color:#fff;
+  width:17px;height:17px;border-radius:50%;font-size:.58rem;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+}
+
+/* ══════════════════════════════════════
+   MINIMAP
+══════════════════════════════════════ */
+#minimap{
+  position:fixed;bottom:22px;left:22px;z-index:20;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(14px);
+  border:1px solid var(--border);border-radius:5px;padding:12px 14px;min-width:150px;
+}
+.mm-title{font-size:.58rem;font-family:var(--font-m);letter-spacing:.14em;color:rgba(255,255,255,.28);text-transform:uppercase;margin-bottom:8px;}
+.mm-shop{
+  display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:3px;
+  font-size:.65rem;font-family:var(--font-m);cursor:pointer;transition:all .18s;border:1px solid transparent;
+}
+.mm-shop.active{background:rgba(255,255,255,.06);border-color:var(--border);}
+.mm-shop:not(.active):hover{background:rgba(255,255,255,.04);}
+.mm-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.mm-name{color:rgba(255,255,255,.5);}
+.mm-shop.active .mm-name{color:var(--white);}
+
+/* ══════════════════════════════════════
+   MOVEMENT CONTROLS
+   ↑ = forward   ↓ = back
+   ◀ = angle left  ▶ = angle right
+══════════════════════════════════════ */
+#vrControls{
+  position:fixed;bottom:22px;right:22px;z-index:20;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.ctrl-row{display:flex;gap:5px;}
+.ctrl-btn{
+  width:40px;height:40px;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:1rem;color:rgba(255,255,255,.7);
+  transition:all .18s;user-select:none;
+}
+.ctrl-btn:hover,.ctrl-btn:active{background:rgba(0,255,179,.12);border-color:var(--neon);color:var(--neon);}
+
+/* Camera nav dots (4 positions) */
+#navDots{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  z-index:20;display:flex;gap:7px;
+}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .25s;}
+.nav-dot.active{background:var(--neon);box-shadow:0 0 7px var(--neon);}
+
+/* ══════════════════════════════════════
+   PRODUCT DETAIL PANEL
+══════════════════════════════════════ */
+#productPanel{
+  position:fixed;right:0;top:0;bottom:0;width:340px;z-index:30;
+  background:rgba(7,7,15,.97);backdrop-filter:blur(20px);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .4s var(--ease);
+}
+#productPanel.open{transform:translateX(0);}
+.pdp-hdr{
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.pdp-hdr-label{font-size:.6rem;font-family:var(--font-m);letter-spacing:.14em;color:rgba(255,255,255,.3);text-transform:uppercase;}
+.icon-btn{
+  width:30px;height:30px;background:var(--glass);border:1px solid var(--border);
+  border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;color:rgba(255,255,255,.6);transition:all .18s;
+}
+.icon-btn:hover{border-color:var(--pink);color:var(--pink);}
+#pdpBody{flex:1;overflow-y:auto;padding:20px;}
+#pdpActions{padding:16px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:7px;}
+
+/* PDP internals */
+.pdp-visual{
+  width:100%;height:160px;border:1px solid var(--border);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:4rem;margin-bottom:16px;position:relative;overflow:hidden;
+}
+.pdp-cat-tag{
+  position:absolute;top:10px;right:10px;
+  padding:3px 8px;border-radius:2px;border:1px solid;
+  font-size:.6rem;font-family:var(--font-m);letter-spacing:.08em;font-weight:600;
+}
+.pdp-name{font-size:1.25rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.25rem;}
+.pdp-shop-ref{font-size:.65rem;font-family:var(--font-m);color:rgba(255,255,255,.3);margin-bottom:.65rem;}
+.pdp-price{font-size:1.9rem;font-weight:800;margin-bottom:1.1rem;}
+.pdp-desc{font-size:.8rem;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:1.25rem;}
+.pdp-attrs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:1.2rem;}
+.attr{padding:9px 11px;background:var(--glass);border:1px solid var(--border);border-radius:3px;}
+.attr-l{font-size:.58rem;font-family:var(--font-m);color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem;}
+.attr-v{font-size:.82rem;font-weight:600;}
+.pdp-qty-row{display:flex;align-items:center;gap:12px;}
+.qty-lbl{font-size:.65rem;font-weight:700;letter-spacing:.08em;color:rgba(255,255,255,.4);}
+.qty-ctrl{display:flex;align-items:center;}
+.qty-btn{
+  width:30px;height:30px;background:var(--glass);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:1rem;color:var(--white);transition:all .15s;
+}
+.qty-btn:first-child{border-radius:3px 0 0 3px;}
+.qty-btn:last-child{border-radius:0 3px 3px 0;}
+.qty-btn:hover{background:rgba(255,255,255,.1);color:var(--neon);}
+.qty-val{
+  width:36px;height:30px;background:rgba(255,255,255,.04);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-m);font-size:.88rem;font-weight:600;
+}
+.btn-add-cart{
+  width:100%;padding:12px;background:var(--a,var(--neon));color:#07070f;
+  font-family:var(--font-d);font-size:.78rem;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;
+  border:none;border-radius:3px;cursor:pointer;transition:all .2s var(--ease);
+}
+.btn-add-cart:hover{filter:brightness(1.12);transform:translateY(-1px);}
+.btn-buy-now{
+  width:100%;padding:11px;background:transparent;
+  border:1px solid;border-radius:3px;
+  font-family:var(--font-d);font-size:.75rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;
+}
+.btn-buy-now:hover{filter:brightness(1.3);}
+
+/* ══════════════════════════════════════
+   CART DRAWER
+══════════════════════════════════════ */
+#cartDrawer{
+  position:fixed;right:0;top:0;bottom:0;width:400px;z-index:40;
+  background:rgba(7,7,15,.98);backdrop-filter:blur(20px);
+  border-left:1px solid var(--border);display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .4s var(--ease);
+}
+#cartDrawer.open{transform:translateX(0);}
+.drawer-hdr{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.drawer-title{font-size:1rem;font-weight:800;}
+#cartList{flex:1;overflow-y:auto;padding:14px 22px;}
+#cartFooter{padding:18px 22px;border-top:1px solid var(--border);}
+.cart-empty{text-align:center;padding:50px 20px;color:rgba(255,255,255,.28);}
+.cart-empty span{font-size:2.5rem;display:block;margin-bottom:.75rem;}
+.cart-empty p{font-family:var(--font-m);font-size:.75rem;}
+.cart-empty small{font-family:var(--font-m);font-size:.65rem;opacity:.6;}
+.cart-item{display:flex;gap:11px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);align-items:center;}
+.cart-item:last-child{border:none;}
+.ci-icon{width:46px;height:46px;background:var(--glass);border:1px solid var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.ci-info{flex:1;}
+.ci-name{font-size:.85rem;font-weight:700;margin-bottom:.15rem;}
+.ci-shop{font-size:.62rem;font-family:var(--font-m);color:rgba(255,255,255,.28);}
+.ci-qty{font-size:.62rem;font-family:var(--font-m);color:rgba(255,255,255,.35);margin-top:.1rem;}
+.ci-right{text-align:right;flex-shrink:0;}
+.ci-price{font-size:.88rem;font-weight:700;color:var(--neon);}
+.ci-remove{display:block;width:22px;height:22px;margin-top:4px;margin-left:auto;background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:.9rem;transition:color .15s;}
+.ci-remove:hover{color:var(--pink);}
+.cart-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cart-total span:first-child{font-size:.68rem;font-family:var(--font-m);color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;}
+.ct-val{font-size:1.5rem;font-weight:800;color:var(--neon);}
+.btn-checkout{
+  width:100%;padding:13px;background:var(--neon);color:#07070f;
+  font-family:var(--font-d);font-size:.8rem;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;
+  border:none;border-radius:3px;cursor:pointer;transition:all .2s var(--ease);margin-bottom:7px;
+}
+.btn-checkout:hover{background:#fff;transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,255,179,.22);}
+.btn-clear-cart{
+  width:100%;padding:9px;background:transparent;border:1px solid var(--border);
+  border-radius:3px;color:rgba(255,255,255,.4);font-size:.72rem;font-weight:600;
+  cursor:pointer;font-family:var(--font-d);transition:all .18s;
+}
+.btn-clear-cart:hover{border-color:var(--pink);color:var(--pink);}
+
+/* ══════════════════════════════════════
+   CHECKOUT MODAL
+══════════════════════════════════════ */
+#checkoutModal{
+  position:fixed;inset:0;z-index:60;
+  background:rgba(0,0,0,.82);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+#checkoutModal.open{opacity:1;pointer-events:all;}
+.modal-box{
+  background:rgba(10,10,20,.98);border:1px solid var(--border);
+  border-radius:10px;width:100%;max-width:460px;max-height:92vh;overflow-y:auto;
+}
+.modal-hdr{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-size:1rem;font-weight:800;}
+#checkoutBody{padding:24px;}
+.ck-steps{display:flex;align-items:center;margin-bottom:24px;}
+.ck-step{
+  flex:1;text-align:center;font-size:.62rem;font-family:var(--font-m);
+  letter-spacing:.08em;text-transform:uppercase;
+  padding-bottom:10px;border-bottom:2px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.28);transition:all .3s;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.ck-step.active{color:var(--neon);border-bottom-color:var(--neon);}
+.ck-step.done{color:rgba(0,255,179,.5);border-bottom-color:rgba(0,255,179,.3);}
+.ck-step-num{width:20px;height:20px;border-radius:50%;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.6rem;}
+.ck-step-line{width:20px;height:1px;background:var(--border);margin-bottom:10px;flex-shrink:0;}
+.ck-order-list{margin-bottom:20px;}
+.ck-order-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;}
+.ck-qty{font-family:var(--font-m);font-size:.7rem;color:rgba(255,255,255,.35);}
+.ck-item-price{font-weight:700;color:var(--neon);}
+.ck-order-total{display:flex;justify-content:space-between;padding:12px 0;margin-top:6px;border-top:1px solid var(--border);}
+.ck-order-total span:first-child{font-family:var(--font-m);font-size:.68rem;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;}
+.ck-order-total span:last-child{font-size:1.2rem;font-weight:800;color:var(--neon);}
+.ck-form{margin-bottom:16px;}
+.ck-field{margin-bottom:12px;}
+.ck-field label{display:block;font-size:.62rem;font-family:var(--font-m);letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem;}
+.ck-field input{
+  width:100%;padding:10px 12px;background:rgba(255,255,255,.04);
+  border:1px solid var(--border);border-radius:3px;
+  color:var(--white);font-family:var(--font-d);font-size:.88rem;outline:none;transition:border-color .2s;
+}
+.ck-field input:focus{border-color:var(--neon);}
+.ck-field input::placeholder{color:rgba(255,255,255,.18);}
+.ck-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ck-secure-note{font-size:.62rem;font-family:var(--font-m);color:rgba(255,255,255,.25);text-align:center;margin-bottom:14px;}
+.btn-ck-next{
+  width:100%;padding:12px;background:var(--neon);color:#07070f;
+  font-family:var(--font-d);font-size:.78rem;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;
+  border:none;border-radius:3px;cursor:pointer;margin-bottom:7px;transition:all .2s;
+}
+.btn-ck-next:hover:not(:disabled){filter:brightness(1.1);}
+.btn-ck-next:disabled{opacity:.5;cursor:not-allowed;}
+.btn-ck-cancel,.btn-ck-back{
+  width:100%;padding:9px;background:transparent;border:1px solid var(--border);
+  border-radius:3px;color:rgba(255,255,255,.4);font-size:.72rem;font-weight:600;
+  cursor:pointer;font-family:var(--font-d);transition:all .18s;
+}
+.btn-ck-cancel:hover,.btn-ck-back:hover{border-color:rgba(255,255,255,.3);color:var(--white);}
+.ck-success{text-align:center;padding:10px 0;}
+.ck-success-icon{font-size:3.5rem;display:block;margin-bottom:1rem;}
+.ck-success h2{font-size:1.5rem;font-weight:800;color:var(--neon);margin-bottom:.4rem;}
+.ck-success-note{margin-bottom:2rem!important;}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+#toastContainer{
+  position:fixed;bottom:22px;right:22px;z-index:80;
+  display:flex;flex-direction:column;gap:7px;pointer-events:none;
+}
+.toast{
+  padding:11px 16px;background:rgba(10,10,20,.95);border:1px solid var(--border);
+  border-radius:5px;font-size:.78rem;font-weight:600;
+  display:flex;align-items:center;gap:9px;max-width:300px;
+  animation:toastIn .3s var(--ease);transition:opacity .3s,transform .3s;
+}
+@keyframes toastIn{from{transform:translateX(16px);opacity:0;}to{transform:none;opacity:1;}}
+.toast-success{border-color:rgba(0,255,179,.35);color:var(--neon);}
+.toast-error{border-color:rgba(255,45,107,.35);color:var(--pink);}
+.toast-info{border-color:rgba(123,92,255,.35);color:#a08fff;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ── 3D Canvas ── -->
+<div id="vr-canvas-container"></div>
+<div id="css2d-container"></div>
+<div id="vrFadeOverlay"></div>
+
+<!-- ══ HUD ══ -->
+<div id="vrHUD">
+  <div class="hud-left">
+    <div class="hud-indicator"></div>
+    <span id="vrShopName">Loading…</span>
+  </div>
+  <div class="hud-right">
+    <button class="hud-btn" onclick="window._uiToggleCart()">
+      🛒 Cart
+      <span class="cart-badge" id="cartBadge1">0</span>
+    </button>
+    <button class="hud-btn" onclick="window._uiExitShop?.()">← Exit Shop</button>
+  </div>
+</div>
+
+<!-- ══ MINIMAP ══ -->
+<div id="minimap">
+  <div class="mm-title">🗺 Shops</div>
+  <div id="minimapList"></div>
+</div>
+
+<!-- ══ MOVEMENT CONTROLS ══
+     ↑ = forward into shop
+     ◀ = angle left   ● = reset   ▶ = angle right
+     ↓ = back to entrance
+══ -->
+<div id="vrControls">
+  <div class="ctrl-row">
+    <button class="ctrl-btn" onclick="window._uiMoveForward()" title="Move Forward">↑</button>
+  </div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" onclick="window._uiMoveLeft()"   title="Angle Left">◀</button>
+    <button class="ctrl-btn" onclick="window._uiMoveCenter()" title="Reset View">●</button>
+    <button class="ctrl-btn" onclick="window._uiMoveRight()"  title="Angle Right">▶</button>
+  </div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn" onclick="window._uiMoveBack()" title="Move Back">↓</button>
+  </div>
+</div>
+
+<!-- ══ NAV DOTS ══ -->
+<div id="navDots"></div>
+
+<!-- ══ PRODUCT DETAIL PANEL ══ -->
+<div id="productPanel">
+  <div class="pdp-hdr">
+    <span class="pdp-hdr-label">Product Details</span>
+    <div class="icon-btn" onclick="window._uiClosePanelBtn()">✕</div>
+  </div>
+  <div id="pdpBody"></div>
+  <div id="pdpActions"></div>
+</div>
+
+<!-- ══ CART DRAWER ══ -->
+<div id="cartDrawer">
+  <div class="drawer-hdr">
+    <span class="drawer-title">🛒 Shopping Cart</span>
+    <div class="icon-btn" onclick="window._uiToggleCart()">✕</div>
+  </div>
+  <div id="cartList"></div>
+  <div id="cartFooter"></div>
+</div>
+
+<!-- ══ CHECKOUT MODAL ══ -->
+<div id="checkoutModal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title">🔒 Secure Checkout</span>
+      <div class="icon-btn" onclick="window._uiCloseCheckout()">✕</div>
+    </div>
+    <div id="checkoutBody"></div>
+  </div>
+</div>
+
+<!-- ══ TOASTS ══ -->
+<div id="toastContainer"></div>
+
+<!-- ══ CSS2DRenderer polyfill for Three.js r128 ══ -->
+<script>
+THREE.CSS2DObject = class extends THREE.Object3D {
+  constructor(el) {
+    super();
+    this.element = el;
+    this.element.style.position = 'absolute';
+    this.element.style.userSelect = 'none';
+    this.addEventListener('removed', () => { if (this.element.parentNode) this.element.parentNode.removeChild(this.element); });
+  }
+};
+THREE.CSS2DRenderer = class {
+  constructor() {
+    this.domElement = document.createElement('div');
+    this.domElement.style.overflow = 'hidden';
+    this._w = 0; this._h = 0; this._wh = 0; this._hh = 0;
+    this._vpm = new THREE.Matrix4();
+  }
+  setSize(w, h) {
+    this._w = w; this._h = h; this._wh = w/2; this._hh = h/2;
+    this.domElement.style.width = w+'px'; this.domElement.style.height = h+'px';
+  }
+  render(scene, camera) {
+    scene.updateMatrixWorld();
+    const vpm = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    this._renderObj(scene, vpm);
+  }
+  _renderObj(obj, vpm) {
+    if (obj instanceof THREE.CSS2DObject) {
+      const v = new THREE.Vector3().setFromMatrixPosition(obj.matrixWorld).applyMatrix4(vpm);
+      const x = Math.round(v.x *  this._wh + this._wh);
+      const y = Math.round(v.y * -this._hh + this._hh);
+      obj.element.style.transform   = `translate(-50%,-50%) translate(${x}px,${y}px)`;
+      obj.element.style.visibility  = v.z > 1 ? 'hidden' : 'visible';
+      if (!obj.element.parentNode) this.domElement.appendChild(obj.element);
+    }
+    obj.children.forEach(c => this._renderObj(c, vpm));
+  }
+};
+</script>
+
+<!-- ══ Boot ══ -->
+<script type="module">
+import { initEngine, loadShop }         from './js/vr-engine.js';
+import { initUI, setCurrentShop, toast, refreshNavDots } from './js/ui-overlay.js';
+import { Auth, AuthAPI, ShopsAPI }      from './js/api.js';
+
+async function boot() {
+  // Auth guard
+  if (!Auth.isLoggedIn()) { window.location.href = 'index.html'; return; }
+  try { await AuthAPI.me(); }
+  catch (_) { window.location.href = 'index.html'; return; }
+
+  const shopId   = sessionStorage.getItem('nexus_shopId');
+  const shopList = JSON.parse(sessionStorage.getItem('nexus_shops') || '[]');
+  if (!shopId) { window.location.href = 'index.html'; return; }
+
+  // Init Three.js
+  initEngine(
+    document.getElementById('vr-canvas-container'),
+    document.getElementById('css2d-container')
+  );
+
+  // Load shop data
+  let shopData;
+  try   { shopData = await ShopsAPI.getOne(shopId); }
+  catch (_) {
+    const s = shopList.find(x => x.id === shopId);
+    shopData = s ? { ...s, products: makeFallbackProducts(s) } : null;
+  }
+  if (!shopData) { window.location.href = 'index.html'; return; }
+
+  // Init UI
+  initUI(shopList, shopData, () => { window.location.href = 'index.html'; });
+
+  // Load 3D scene
+  await loadShop(shopData);
+  refreshNavDots();
+
+  // Minimap teleport
+  window._uiEnterShop = async (id) => {
+    if (id === shopData.id) return;
+    sessionStorage.setItem('nexus_shopId', id);
+    let next;
+    try   { next = await ShopsAPI.getOne(id); }
+    catch (_) {
+      const s = shopList.find(x => x.id === id);
+      next = s ? { ...s, products: makeFallbackProducts(s) } : null;
+    }
+    if (!next) return;
+    shopData = next;
+    setCurrentShop(next);
+    await loadShop(next);
+    refreshNavDots();
+  };
+
+  // Lobby back-link
+  window._uiGoLobby = () => { window.location.href = 'index.html'; };
+
+  // ── Keyboard shortcuts ──────────────────────────────
+  document.addEventListener('keydown', e => {
+    switch (e.key) {
+      case 'ArrowLeft':  window._uiMoveLeft?.();    break;
+      case 'ArrowRight': window._uiMoveRight?.();   break;
+      case 'ArrowUp':    window._uiMoveForward?.();  break;   // ↑ = forward
+      case 'ArrowDown':  window._uiMoveBack?.();    break;   // ↓ = back
+      case 'Escape':
+        window._uiClosePanelBtn?.();
+        window._uiCloseCheckout?.();
+        break;
+    }
+  });
+}
+
+function makeFallbackProducts(shop) {
+  const e = ['📦','🎁','⭐','💫','🔮','✨'];
+  const c = ['#222233','#332222','#223322','#332233','#222332','#333322'];
+  return Array.from({ length: 6 }, (_, i) => ({
+    id: `${shop.id}-p${i}`, shopId: shop.id,
+    name: `${shop.name} Item ${i+1}`,
+    price: Math.floor(Math.random()*200)+50,
+    description: 'A premium product from this virtual store.',
+    emoji: e[i], category: 'General',
+    stock: Math.floor(Math.random()*15)+1,
+    rating: (4+Math.random()).toFixed(1),
+    color: c[i], dimensions: { w:0.45, h:0.45, d:0.45 }
+  }));
+}
+
+boot();
+</script>
+</body>
+</html>
