@@ -15,20 +15,24 @@ import {
 let cartState       = { items: [], total: 0, count: 0 };
 let currentShop     = null;
 let allShops        = [];
+let currentUser     = null;
 let selectedProduct = null;
 let selectedQty     = 1;
 let checkoutStep    = 0;
 
 /* ── Bootstrap ────────────────────────────────────────── */
 // NEW
-export function initUI(shops, shopData, exitCallback) {
+export function initUI(shops, shopData, exitCallback, user = null) {
   allShops    = shops;
   currentShop = shopData;
+  currentUser = user;
   window._uiExitShop = exitCallback;
   renderMinimap();
   renderHUD();
   refreshNavDots();   
-  loadCart();
+  if (currentUser && currentUser.role !== 'admin') {
+    loadCart();
+  }
 }
 
 export function setCurrentShop(shopData) {
@@ -86,15 +90,23 @@ function openProductPanel(product) {
     </div>
   `;
 
-  acts.innerHTML = `
-    <button class="btn-add-cart" style="--a:${t.accent};" onclick="window._uiAddToCart()">
-      Add to Cart 🛒
-    </button>
-    <button class="btn-buy-now" style="background:${t.accent}22;color:${t.accent};border-color:${t.accent}44;"
-            onclick="window._uiBuyNow()">
-      Buy Now — $${product.price.toLocaleString()}
-    </button>
-  `;
+  if (currentUser && currentUser.role === 'admin') {
+    acts.innerHTML = `
+      <div class="pdp-admin-note" style="font-size:.7rem;font-family:var(--font-m);color:rgba(255,255,255,.3);text-align:center;padding:10px;border:1px dashed var(--border);">
+        Admin Mode: Purchasing Disabled
+      </div>
+    `;
+  } else {
+    acts.innerHTML = `
+      <button class="btn-add-cart" style="--a:${t.accent};" onclick="window._uiAddToCart()">
+        Add to Cart 🛒
+      </button>
+      <button class="btn-buy-now" style="background:${t.accent}22;color:${t.accent};border-color:${t.accent}44;"
+              onclick="window._uiBuyNow()">
+        Buy Now — $${product.price.toLocaleString()}
+      </button>
+    `;
+  }
 
   panel.classList.add('open');
 }

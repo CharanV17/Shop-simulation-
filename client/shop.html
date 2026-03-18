@@ -7,6 +7,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <script src="./js/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <style>
 /* ══════════════════════════════════════
    TOKENS
@@ -478,7 +486,14 @@ async function boot() {
   if (!shopData) { window.location.href = 'index.html'; return; }
 
   // Init UI
-  initUI(shopList, shopData, () => { window.location.href = 'index.html'; });
+  const user = await AuthAPI.me();
+  initUI(shopList, shopData, () => { window.location.href = 'index.html'; }, user);
+
+  // Hide cart for admin
+  if (user.role === 'admin') {
+    const cartBtn = document.querySelector('.hud-btn[onclick*="ToggleCart"]');
+    if (cartBtn) cartBtn.style.display = 'none';
+  }
 
   // Load 3D scene
   await loadShop(shopData);

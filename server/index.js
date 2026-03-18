@@ -4,6 +4,9 @@ const cors      = require('cors');
 const path      = require('path');
 const connectDB = require('./config/db');
 const User      = require('./models/User');
+const Shop      = require('./models/Shop');
+const Product   = require('./models/Product');
+const { shops: defaultShops } = require('./data/store');
 
 const authRoutes  = require('./routes/auth');
 const shopRoutes  = require('./routes/shops');
@@ -17,8 +20,10 @@ const PORT = process.env.PORT || 3000;
 // ── Connect to MongoDB then start server ──────────────────
 connectDB().then(async () => {
 
-  // Seed demo accounts if DB is empty
+  // Seed data if DB is empty
   await User.seedDefaults();
+  await Shop.seedDefaults(defaultShops);
+  await Product.seedDefaults(defaultShops);
 
   // ── Middleware ──────────────────────────────────────────
   app.use(cors({ origin: '*' }));
