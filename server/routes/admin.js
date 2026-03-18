@@ -1,7 +1,8 @@
 const express = require('express');
 const User    = require('../models/User');
 const Order   = require('../models/Order');
-const { shops } = require('../data/store');
+const Shop    = require('../models/Shop');
+const Product = require('../models/Product');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -10,13 +11,17 @@ router.use(authenticateToken, requireAdmin);
 // GET /api/admin/dashboard
 router.get('/dashboard', async (req, res) => {
   try {
-    const totalProducts = shops.reduce((s, sh) => s + sh.products.length, 0);
+    const shopCount     = await Shop.countDocuments();
+    const productCount  = await Product.countDocuments();
     const userCount     = await User.countDocuments();
     const orders        = await Order.find();
     const totalRevenue  = orders.reduce((s, o) => s + o.total, 0);
+
+    const shops = await Shop.find().populate('products');
+
     res.json({
-      shops:       shops.length,
-      products:    totalProducts,
+      shops:       shopCount,
+      products:    productCount,
       users:       userCount,
       orders:      orders.length,
       revenue:     totalRevenue,
@@ -57,27 +62,81 @@ router.get('/orders', async (req, res) => {
 });
 
 // PATCH /api/admin/products/:id
-router.patch('/products/:id', (req, res) => {
-  const { price, stock, name } = req.body;
-  for (const shop of shops) {
-    const product = shop.products.find(p => p.id === req.params.id);
-    if (product) {
-      if (price !== undefined) product.price = parseFloat(price);
-      if (stock !== undefined) product.stock = parseInt(stock);
-      if (name  !== undefined) product.name  = name;
-      return res.json(product);
-    }
+router.patch('/products/:id', async (req, res) => {
+  try {
+    const { price, stock, name } = req.body;
+    const updates = {};
+    if (price !== undefined) updates.price = parseFloat(price);
+    if (stock !== undefined) updates.stock = parseInt(stock);
+    if (name  !== undefined) updates.name  = name;
+
+    const product = await Product.findOneAndUpdate({ id: req.params.id }, updates, { new: true });
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
   }
-  res.status(404).json({ error: 'Product not found' });
 });
 
 // DELETE /api/admin/products/:id
-router.delete('/products/:id', (req, res) => {
-  for (const shop of shops) {
-    const idx = shop.products.findIndex(p => p.id === req.params.id);
-    if (idx !== -1) { shop.products.splice(idx, 1); return res.json({ message: 'Deleted' }); }
+router.delete('/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findOneAndDelete({ id: req.params.id });
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
   }
-  res.status(404).json({ error: 'Product not found' });
+});
+
+// POST /api/admin/shops
+router.post('/shops', async (req, res) => {
+  try {
+    const { id, name, description, emoji, theme } = req.body;
+    if (!id || !name || !emoji) return res.status(400).json({ error: 'Missing required fields' });
+
+    const existing = await Shop.findOne({ id });
+    if (existing) return res.status(400).json({ error: 'Shop ID already exists' });
+
+    const shop = await Shop.create({ id, name, description, emoji, theme });
+    res.status(201).json(shop);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error creating shop' });
+  }
+});
+
+// DELETE /api/admin/shops/:id
+router.delete('/shops/:id', async (req, res) => {
+  try {
+    const shop = await Shop.findOneAndDelete({ id: req.params.id });
+    if (!shop) return res.status(404).json({ error: 'Shop not found' });
+    
+    // Cascade delete products
+    await Product.deleteMany({ shopId: req.params.id });
+    
+    res.json({ message: 'Shop and associated products deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error deleting shop' });
+  }
+});
+
+// POST /api/admin/products
+router.post('/products', async (req, res) => {
+  try {
+    const { id, shopId, name, price, description, emoji, category, stock, color, dimensions, modelUrl } = req.body;
+    if (!id || !shopId || !name || price === undefined) return res.status(400).json({ error: 'Missing required fields' });
+
+    const shop = await Shop.findOne({ id: shopId });
+    if (!shop) return res.status(404).json({ error: 'Target shop not found' });
+
+    const existing = await Product.findOne({ id });
+    if (existing) return res.status(400).json({ error: 'Product ID already exists' });
+
+    const product = await Product.create({ id, shopId, name, price, description, emoji, category, stock, color, dimensions, modelUrl });
+    res.status(201).json(product);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error creating product' });
+  }
 });
 
 module.exports = router;

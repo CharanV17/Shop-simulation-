@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NEXUS VR — Admin Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:      #05050a;
+  --panel:   #0d0d16;
+  --white:   #F0EDE6;
+  --neon:    #00FFB3;
+  --pink:    #FF2D6B;
+  --gold:    #FFD166;
+  --purple:  #7B5CFF;
+  --glass:   rgba(255,255,255,.04);
+  --border:  rgba(255,255,255,.08);
+  --font-d:  'Syne',sans-serif;
+  --font-m:  'DM Mono',monospace;
+  --ease:    cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--white);font-family:var(--font-d);min-height:100vh;display:flex;}
+
+/* Grain overlay */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.02;pointer-events:none;z-index:9999;}
+
+/* Sidebar */
+.sidebar{width:260px;background:var(--panel);border-right:1px solid var(--border);padding:30px 20px;display:flex;flex-direction:column;}
+.logo{font-size:1.4rem;font-weight:800;letter-spacing:-.04em;margin-bottom:40px;}
+.logo em{font-style:normal;color:var(--neon);}
+.nav-link{padding:12px 16px;border-radius:6px;color:rgba(255,255,255,.4);text-decoration:none;font-size:.9rem;font-weight:600;margin-bottom:6px;transition:all .2s;}
+.nav-link:hover,.nav-link.active{background:var(--glass);color:var(--neon);}
+.sidebar-footer{margin-top:auto;}
+
+/* Main Content */
+.main{flex:1;padding:40px;overflow-y:auto;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;}
+.title-group h1{font-size:2rem;font-weight:800;letter-spacing:-.03em;}
+.title-group p{font-size:.8rem;font-family:var(--font-m);color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;}
+
+/* Stats Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;}
+.stat-card{background:var(--panel);border:1px solid var(--border);padding:20px;border-radius:8px;}
+.stat-lbl{font-size:.65rem;font-family:var(--font-m);color:rgba(255,255,255,.3);text-transform:uppercase;margin-bottom:8px;}
+.stat-val{font-size:1.8rem;font-weight:800;color:var(--neon);}
+
+/* Content Sections */
+.section{display:none;}
+.section.active{display:block;}
+
+/* Tables */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.card-header{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:14px 20px;font-size:.65rem;font-family:var(--font-m);text-transform:uppercase;color:rgba(255,255,255,.3);border-bottom:1px solid var(--border);}
+td{padding:14px 20px;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.04);}
+.badge{padding:4px 8px;border-radius:4px;font-size:.65rem;font-family:var(--font-m);font-weight:700;}
+.badge-neon{background:rgba(0,255,179,.1);color:var(--neon);}
+
+/* Buttons */
+.btn{padding:8px 16px;border-radius:4px;border:none;font-family:var(--font-d);font-weight:700;font-size:.8rem;cursor:pointer;transition:all .2s;}
+.btn-primary{background:var(--neon);color:var(--bg);}
+.btn-secondary{background:var(--glass);color:var(--white);border:1px solid var(--border);}
+.btn-danger{background:rgba(255,45,107,.1);color:var(--pink);}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+
+/* Form Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:100;display:none;align-items:center;justify-content:center;}
+.modal-content{background:var(--panel);border:1px solid var(--border);border-radius:12px;width:100%;max-width:500px;padding:32px;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:.7rem;font-family:var(--font-m);color:rgba(255,255,255,.4);margin-bottom:6px;text-transform:uppercase;}
+.form-input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--white);outline:none;}
+.form-input:focus{border-color:var(--neon);}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">NEX<em>US</em> ADMIN</div>
+  <nav>
+    <a href="#" class="nav-link active" data-section="dashboard">Dashboard</a>
+    <a href="#" class="nav-link" data-section="shops">Virtual Shops</a>
+    <a href="#" class="nav-link" data-section="products">Master Inventory</a>
+    <a href="#" class="nav-link" data-section="orders">System Orders</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn btn-secondary" onclick="location.href='index.html'">Lobby</button>
+  </div>
+</aside>
+
+<main class="main">
+  <!-- Dashboard -->
+  <div id="section-dashboard" class="section active">
+    <div class="header">
+      <div class="title-group">
+        <h1>Command Center</h1>
+        <p>Live metrics from the NEXUS Metaverse</p>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-lbl">Active Shops</div><div class="stat-val" id="stat-shops">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Live Products</div><div class="stat-val" id="stat-products">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Citizen Base</div><div class="stat-val" id="stat-users">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">Vault (Gold)</div><div class="stat-val" id="stat-revenue">0</div></div>
+    </div>
+  </div>
+
+  <!-- Shops -->
+  <div id="section-shops" class="section">
+    <div class="header">
+      <div class="title-group">
+        <h1>Virtual Shops</h1>
+        <p>Manage VR world instances</p>
+      </div>
+      <button class="btn btn-primary" onclick="window.showAddShop()">+ New World</button>
+    </div>
+    <div class="card">
+      <table id="table-shops">
+        <thead><tr><th>Emoji</th><th>Shop Name</th><th>ID</th><th>Themes</th><th>Product #</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Products -->
+  <div id="section-products" class="section">
+    <div class="header">
+      <div class="title-group">
+        <h1>Master Inventory</h1>
+        <p>Holographic items across all dimensions</p>
+      </div>
+      <button class="btn btn-primary" onclick="window.showAddProduct()">+ Add Product</button>
+    </div>
+    <div class="card">
+      <table id="table-products">
+        <thead><tr><th>Item</th><th>ID</th><th>Shop</th><th>Price</th><th>Stock</th><th>Category</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div class="modal" id="modal-shop">
+  <div class="modal-content">
+    <h2 style="margin-bottom:20px">Initialize New World</h2>
+    <div class="form-group"><label class="form-label">Shop ID</label><input type="text" id="shop-id" class="form-input" placeholder="e.g. cyber-sector"></div>
+    <div class="form-group"><label class="form-label">Name</label><input type="text" id="shop-name" class="form-input" placeholder="e.g. Cyber Sector 7"></div>
+    <div class="form-group"><label class="form-label">Emoji</label><input type="text" id="shop-emoji" class="form-input" placeholder="e.g. 🤖"></div>
+    <div class="form-group"><label class="form-label">Description</label><input type="text" id="shop-desc" class="form-input"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-secondary" onclick="window.closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="window.submitShop()">Launch Shop →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-product">
+  <div class="modal-content">
+    <h2 style="margin-bottom:20px">Forge New Item</h2>
+    <div class="form-group"><label class="form-label">Product ID</label><input type="text" id="p-id" class="form-input"></div>
+    <div class="form-group"><label class="form-label">Target Shop ID</label><input type="text" id="p-shop" class="form-input"></div>
+    <div class="form-group"><label class="form-label">Item Name</label><input type="text" id="p-name" class="form-input"></div>
+    <div class="form-group"><label class="form-label">Price (Gold)</label><input type="number" id="p-price" class="form-input"></div>
+    <div class="form-group"><label class="form-label">Initial Stock</label><input type="number" id="p-stock" class="form-input"></div>
+    <div class="form-group"><label class="form-label">Model URL (.gltf / .glb)</label><input type="text" id="p-model" class="form-input" placeholder="Static asset path or URL"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-secondary" onclick="window.closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="window.submitProduct()">Commit to Database →</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>

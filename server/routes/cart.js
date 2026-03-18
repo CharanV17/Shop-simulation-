@@ -1,5 +1,7 @@
 const express = require('express');
-const { carts, shops } = require('../data/store');
+const { carts } = require('../data/store');
+const Shop = require('../models/Shop');
+const Product = require('../models/Product');
 const { authenticateToken } = require('../middleware/auth');
 const router = express.Router();
 
@@ -20,28 +22,36 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // POST /api/cart  { productId, shopId, qty }
-router.post('/', authenticateToken, (req, res) => {
-  const { productId, shopId, qty = 1 } = req.body;
-  if (!productId || !shopId) return res.status(400).json({ error: 'productId and shopId required' });
+router.post('/', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ error: 'Admins cannot use the cart' });
+    }
 
-  const shop = shops.find(s => s.id === shopId);
-  if (!shop) return res.status(404).json({ error: 'Shop not found' });
+    const { productId, shopId, qty = 1 } = req.body;
+    if (!productId || !shopId) return res.status(400).json({ error: 'productId and shopId required' });
 
-  const product = shop.products.find(p => p.id === productId);
-  if (!product) return res.status(404).json({ error: 'Product not found' });
+    const shop = await Shop.findOne({ id: shopId });
+    if (!shop) return res.status(404).json({ error: 'Shop not found' });
 
-  if (product.stock < qty) return res.status(400).json({ error: 'Insufficient stock' });
+    const product = await Product.findOne({ id: productId });
+    if (!product) return res.status(404).json({ error: 'Product not found' });
 
-  const cart = getUserCart(req.user.id);
-  const existing = cart.find(i => i.id === productId);
+    if (product.stock < qty) return res.status(400).json({ error: 'Insufficient stock' });
 
-  if (existing) {
-    existing.qty = Math.min(existing.qty + qty, 10);
-  } else {
-    cart.push({ id: product.id, name: product.name, price: product.price, emoji: product.emoji, shopId: shop.id, shopName: shop.name, qty });
+    const cart = getUserCart(req.user.id);
+    const existing = cart.find(i => i.id === productId);
+
+    if (existing) {
+      existing.qty = Math.min(existing.qty + qty, 10);
+    } else {
+      cart.push({ id: product.id, name: product.name, price: product.price, emoji: product.emoji, shopId: shop.id, shopName: shop.name, qty });
+    }
+
+    res.json(cartResponse(cart));
+  } catch (err) {
+    res.status(500).json({ error: 'Server error adding to cart' });
   }
-
-  res.json(cartResponse(cart));
 });
 
 // PATCH /api/cart/:productId

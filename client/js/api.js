@@ -158,7 +158,21 @@ const AdminAPI = {
       method: 'POST',
       body: JSON.stringify(shopData)
     });
-  }
+  },
+
+  async deleteShop(shopId) {
+    return apiFetch(`/admin/shops/${shopId}`, { method: 'DELETE' });
+  },
+
+  async addProduct(productData) {
+    return apiFetch('/admin/products', {
+      method: 'POST',
+      body: JSON.stringify(productData)
+    });
+  },
+
+  // Helper for custom calls
+  apiFetch
 };
 
 export { Auth, AuthAPI, ShopsAPI, CartAPI, OrdersAPI, AdminAPI };

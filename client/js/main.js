@@ -202,7 +202,7 @@ function getFallbackShops() {
     { id:'tech-hub',         name:'Tech Hub',          description:'Cutting-edge gadgets & electronics', emoji:'⚡', theme:{primary:'#00FFB3',accent:'#00FFB3',secondary:'#0a2040',wall:'#071020'}, productCount:6 },
     { id:'fashion-district', name:'Fashion District',  description:'Curated luxury fashion',              emoji:'👗', theme:{primary:'#FF2D6B',accent:'#FF2D6B',secondary:'#2d0820',wall:'#0f0210'}, productCount:6 },
     { id:'gourmet-market',   name:'Gourmet Market',    description:'Artisan foods & kitchen essentials',  emoji:'🍕', theme:{primary:'#FFD166',accent:'#FFD166',secondary:'#2d1800',wall:'#0f0800'}, productCount:6 },
-    { id:'sports-zone',      name:'Sports Zone',       description:'Performance gear for champions',       emoji:'⚽', theme:{primary:'#00FF7F',accent:'#00FF7F',secondary:'#002810',wall:'#000e05'}, productCount:6 },
+    { id:'fresh-market',     name:'Fresh Market',      description:'Farm-fresh fruits and vegetables',            emoji:'🥦', theme:{primary:'#FF6B35',accent:'#FF6B35',secondary:'#3d1f00',wall:'#1a0d00'}, productCount:6 },
     { id:'art-gallery',      name:'Art Gallery',       description:'Curated fine art & collectibles',      emoji:'🎨', theme:{primary:'#7B5CFF',accent:'#7B5CFF',secondary:'#10001a',wall:'#07000e'}, productCount:6 },
   ];
 }

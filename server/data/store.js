@@ -9,7 +9,7 @@ const shops = [
     id: 'tech-hub', name: 'Tech Hub',
     description: 'Cutting-edge gadgets & electronics for the digital age',
     emoji: '⚡',
-    theme: { primary: '#00FFB3', accent: '#00FFB3', secondary: '#0a2040', floor: '#0d1a2e', wall: '#071020' },
+    theme: { primary: '#00d2ff', accent: '#00f2ff', secondary: '#f0f5ff', floor: '#ffffff', wall: '#f8f9fb' },
     products: [
       { id: 't1', shopId: 'tech-hub', name: 'Quantum Earbuds',   price: 149,  description: 'Noise-cancelling with 40hr battery and spatial audio. Premium aluminum finish.', emoji: '🎧', category: 'Audio',        stock: 12, rating: 4.8, color: '#1a1a2e', dimensions: { w:0.5, h:0.5,  d:0.5  } },
       { id: 't2', shopId: 'tech-hub', name: 'HoloWatch Pro',     price: 299,  description: 'Holographic display smartwatch with health monitoring, GPS, and 7-day battery.', emoji: '⌚', category: 'Wearable',     stock: 8,  rating: 4.9, color: '#c0c0c0', dimensions: { w:0.4, h:0.6,  d:0.15 } },
@@ -48,17 +48,17 @@ const shops = [
     ]
   },
   {
-    id: 'sports-zone', name: 'Sports Zone',
-    description: 'Performance gear and equipment for champions in every discipline',
-    emoji: '⚽',
-    theme: { primary: '#00FF7F', accent: '#00FF7F', secondary: '#002810', floor: '#001508', wall: '#000e05' },
+    id: 'fresh-market', name: 'Fresh Market',
+    description: 'Farm-fresh fruits and vegetables, straight from the countryside',
+    emoji: '🥦',
+    theme: { primary: '#FF6B35', accent: '#FF6B35', secondary: '#3d1f00', floor: '#2a1400', wall: '#1a0d00' },
     products: [
-      { id: 's1', shopId: 'sports-zone', name: 'Carbon Racket Pro',    price: 265, description: 'Carbon fiber tennis racket used by top-10 pros.',                           emoji: '🎾', category: 'Tennis',   stock: 7,  rating: 4.8, color: '#1a1a1a', dimensions: { w:0.28, h:0.7,  d:0.05 } },
-      { id: 's2', shopId: 'sports-zone', name: 'HyperBoost Cleats',    price: 180, description: 'Aerodynamic football cleats with reactive foam midsole.',                   emoji: '👟', category: 'Football', stock: 14, rating: 4.7, color: '#ccff00', dimensions: { w:0.32, h:0.15, d:0.28 } },
-      { id: 's3', shopId: 'sports-zone', name: 'Smart Swim Goggles',   price: 129, description: 'HUD-enabled swim goggles with lap counter and HR monitor.',                 emoji: '🥽', category: 'Swimming', stock: 10, rating: 4.6, color: '#00aaff', dimensions: { w:0.35, h:0.1,  d:0.08 } },
-      { id: 's4', shopId: 'sports-zone', name: 'Summit Pack 45L',      price: 195, description: 'Waterproof hiking pack with solar panel pocket.',                           emoji: '🎒', category: 'Hiking',   stock: 6,  rating: 4.9, color: '#2d5a1b', dimensions: { w:0.4,  h:0.65, d:0.25 } },
-      { id: 's5', shopId: 'sports-zone', name: 'Velocity Bike Helmet', price: 149, description: 'MIPS technology cycling helmet with ANGI sensor.',                          emoji: '🪖', category: 'Cycling',  stock: 9,  rating: 4.8, color: '#ffffff', dimensions: { w:0.3,  h:0.25, d:0.35 } },
-      { id: 's6', shopId: 'sports-zone', name: 'Percussion Gun',       price: 279, description: 'Deep tissue massage gun with 6 attachments and 8-hour battery.',            emoji: '💪', category: 'Recovery', stock: 11, rating: 4.9, color: '#ff6600', dimensions: { w:0.18, h:0.28, d:0.08 } },
+      { id: 'fm1', shopId: 'fresh-market', name: 'Watermelon',        price: 5,   description: 'Sweet, juicy whole watermelon. Grown in sunny fields, perfect for summer.', emoji: '🍉', category: 'Fruits',     stock: 20, rating: 4.9, color: '#2d8a2d', dimensions: { w:0.55, h:0.38, d:0.55 } },
+      { id: 'fm2', shopId: 'fresh-market', name: 'Banana Bunch',      price: 3,   description: 'Ripe, golden banana bunch. Rich in potassium and natural energy.',          emoji: '🍌', category: 'Fruits',     stock: 30, rating: 4.8, color: '#f5d020', dimensions: { w:0.35, h:0.18, d:0.2  } },
+      { id: 'fm3', shopId: 'fresh-market', name: 'Orange Basket',     price: 8,   description: 'Hand-picked navel oranges, bursting with vitamin C.',                       emoji: '🍊', category: 'Fruits',     stock: 25, rating: 4.7, color: '#e8821a', dimensions: { w:0.4,  h:0.22, d:0.4  } },
+      { id: 'fm4', shopId: 'fresh-market', name: 'Tomato Crate',      price: 6,   description: 'Vine-ripened red tomatoes. Sweet, firm and full of flavour.',               emoji: '🍅', category: 'Vegetables', stock: 22, rating: 4.8, color: '#cc2200', dimensions: { w:0.45, h:0.2,  d:0.35 } },
+      { id: 'fm5', shopId: 'fresh-market', name: 'Broccoli Head',     price: 4,   description: 'Fresh-cut broccoli crowns. High in fibre and antioxidants.',                emoji: '🥦', category: 'Vegetables', stock: 15, rating: 4.6, color: '#2a7a1a', dimensions: { w:0.3,  h:0.32, d:0.3  } },
+      { id: 'fm6', shopId: 'fresh-market', name: 'Carrot Bundle',     price: 3,   description: 'Crisp baby carrots with greens still attached. Naturally sweet.',           emoji: '🥕', category: 'Vegetables', stock: 28, rating: 4.9, color: '#e05a00', dimensions: { w:0.12, h:0.45, d:0.12 } },
     ]
   },
   {

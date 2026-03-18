@@ -1,6 +1,7 @@
 const express = require('express');
 const Order   = require('../models/Order');
-const { carts, shops } = require('../data/store');
+const Product = require('../models/Product');
+const { carts } = require('../data/store');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -8,6 +9,10 @@ const router = express.Router();
 // POST /api/orders  — checkout & save to MongoDB
 router.post('/', authenticateToken, async (req, res) => {
   try {
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ error: 'Admins cannot purchase products' });
+    }
+
     const cart = carts[req.user.id] || [];
     if (cart.length === 0)
       return res.status(400).json({ error: 'Cart is empty' });
@@ -16,11 +21,12 @@ router.post('/', authenticateToken, async (req, res) => {
     if (!paymentDetails)
       return res.status(400).json({ error: 'Payment details required' });
 
-    // Deduct stock from in-memory store
+    // Deduct stock in MongoDB
     for (const item of cart) {
-      const shop    = shops.find(s => s.id === item.shopId);
-      const product = shop?.products.find(p => p.id === item.id);
-      if (product) product.stock = Math.max(0, product.stock - item.qty);
+      await Product.findOneAndUpdate(
+        { id: item.id },
+        { $inc: { stock: -item.qty } }
+      );
     }
 
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
