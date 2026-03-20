@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/nexus-vr';
+    const uri = process.env.MONGO_URI || 'mongodb+srv://CharanV17:L1qorYsk7LNV1qBU@charan17.icrlhlw.mongodb.net/?appName=Charan17';
     await mongoose.connect(uri);
     console.log('  ✅  MongoDB connected:', uri);
   } catch (err) {
