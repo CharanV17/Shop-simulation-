@@ -16,7 +16,6 @@ import { buildProductMeshes, clearProducts, getProductMeshes } from './product-m
 import { onProductClick, onProductHover, onProductHoverEnd } from './ui-overlay.js';
 
 let renderer, cssRenderer, scene, camera, animId, composer, controls;
-let listener, backgroundMusic;
 let currentLookAt   = new THREE.Vector3(0, 1.5, 0);
 let targetCamPos    = null;
 let targetLookAt    = null;
@@ -51,10 +50,6 @@ export function initEngine(canvasContainer, cssContainer) {
   camera.position.copy(CAM[0].pos);
   currentLookAt.copy(CAM[0].look);
   camera.lookAt(currentLookAt);
-
-  // Audio Listener
-  listener = new THREE.AudioListener();
-  camera.add(listener);
 
   // WebGL renderer
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -133,8 +128,6 @@ export async function loadShop(shopData) {
 
   buildShopEnvironment(scene, shopData);
   await buildProductMeshes(scene, shopData.products, shopData.theme);
-
-  playThemeMusic(shopData.theme.accent);
 
   // Disable drag-to-rotate for Sports Zone
   if (controls) {
@@ -344,27 +337,4 @@ function onResize() {
 export function destroyEngine() {
   cancelAnimationFrame(animId);
   renderer.dispose();
-  if (backgroundMusic) backgroundMusic.stop();
-}
-
-function playThemeMusic(colorStr) {
-  if (backgroundMusic) backgroundMusic.stop();
-  const audioCtx = THREE.AudioContext.getContext();
-  if (audioCtx.state === 'suspended') {
-    window.addEventListener('mousedown', () => audioCtx.resume(), { once: true });
-  }
-  backgroundMusic = new THREE.Audio(listener);
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
-  const osc1 = audioCtx.createOscillator();
-  const osc2 = audioCtx.createOscillator();
-  osc1.type = 'sine'; osc2.type = 'triangle';
-  const hue = new THREE.Color(colorStr).getHSL({h:0, s:0, l:0}).h;
-  const baseFreq = 110 + (hue * 110); 
-  osc1.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
-  osc2.frequency.setValueAtTime(baseFreq * 1.501, audioCtx.currentTime);
-  osc1.connect(gainNode); osc2.connect(gainNode);
-  gainNode.connect(backgroundMusic.gain);
-  osc1.start(); osc2.start();
-  backgroundMusic.stop = () => { osc1.stop(); osc2.stop(); gainNode.disconnect(); };
 }

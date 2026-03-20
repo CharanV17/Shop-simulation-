@@ -31,6 +31,10 @@ const shops = [
       { id: 'f4', shopId: 'fashion-district', name: 'Aurora Sunglasses', price: 220, description: 'UV400 polarized gradient lenses with titanium frame.',                         emoji: '🕶️', category: 'Eyewear',     stock: 15, rating: 4.6, color: '#b8860b', dimensions: { w:0.5,  h:0.18, d:0.18 } },
       { id: 'f5', shopId: 'fashion-district', name: 'Cashmere Wrap',     price: 165, description: '100% Mongolian cashmere oversized wrap. Ultra-soft.',                          emoji: '🧣', category: 'Accessories', stock: 8,  rating: 4.9, color: '#f5f5dc', dimensions: { w:0.8,  h:0.05, d:0.4  } },
       { id: 'f6', shopId: 'fashion-district', name: 'Neo Bomber Jacket', price: 395, description: 'Futuristic metallic bomber with iridescent finish and ribbed cuffs.',          emoji: '🧥', category: 'Outerwear',   stock: 9,  rating: 4.7, color: '#556b2f', dimensions: { w:0.65, h:0.75, d:0.18 } },
+      { id: 'f7', shopId: 'fashion-district', name: 'Midnight Satin Dress', price: 429, description: 'Bias-cut satin evening dress with a draped neckline and fluid silhouette.',    emoji: '👗', category: 'Apparel',     stock: 7,  rating: 4.8, color: '#22263a', dimensions: { w:0.58, h:0.98, d:0.16 } },
+      { id: 'f8', shopId: 'fashion-district', name: 'Ivory Pleated Gown',   price: 489, description: 'Full-length pleated gown in soft ivory with sculpted waist detailing.',      emoji: '🤍', category: 'Apparel',     stock: 5,  rating: 4.9, color: '#f1ece0', dimensions: { w:0.62, h:1.02, d:0.18 } },
+      { id: 'f9', shopId: 'fashion-district', name: 'Urban Denim Trench',   price: 365, description: 'Tailored denim trench coat with contrast stitching and oversized lapels.',    emoji: '🧥', category: 'Outerwear',   stock: 8,  rating: 4.7, color: '#2f3f5f', dimensions: { w:0.64, h:0.92, d:0.18 } },
+      { id: 'f10', shopId: 'fashion-district', name: 'Velour Cropped Hoodie', price: 239, description: 'Plush velour cropped hoodie with satin-lined hood and soft ribbed hem.',   emoji: '👚', category: 'Apparel',     stock: 11, rating: 4.6, color: '#5d3a52', dimensions: { w:0.56, h:0.68, d:0.17 } },
     ]
   },
   {
