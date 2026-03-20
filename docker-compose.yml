@@ -8,16 +8,15 @@ services:
       - "3001:3000"
     environment:
       PORT: 3000
-      MONGO_URI: mongodb://mongo:27017/nexus-vr
+      MONGO_URI: ${MONGO_URI:-mongodb+srv://CharanV17:L1qorYsk7LNV1qBU@charan17.icrlhlw.mongodb.net/?appName=Charan17}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-nexus-vr}
       JWT_SECRET: change-me-in-production
-    depends_on:
-      mongo:
-        condition: service_healthy
     restart: unless-stopped
 
   mongo:
     image: mongo:7
     container_name: nexus-vr-mongo
+    profiles: ["local-db"]
     ports:
       - "27017:27017"
     volumes:
