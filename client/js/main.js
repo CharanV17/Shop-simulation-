@@ -2,10 +2,11 @@
    main.js — App bootstrap, screen routing, auth + session
    Entry point for index.html (lobby / auth)
 ═══════════════════════════════════════════════════════════ */
-import { Auth, AuthAPI, ShopsAPI } from './api.js';
+import { Auth, AuthAPI, ShopsAPI, OrdersAPI } from './api.js';
 
 let currentUser = null;
 let allShops    = [];
+let orderHistory = [];
 
 /* ── On load ──────────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', async () => {
@@ -114,6 +115,7 @@ window.handleLogout = () => {
   AuthAPI.logout();
   currentUser = null;
   allShops    = [];
+  orderHistory = [];
   showScreen('auth');
 };
 
@@ -183,6 +185,85 @@ window.goAdmin = () => {
   if (currentUser?.role !== 'admin') { alert('Admin access only.'); return; }
   window.location.href = 'admin.html';
 };
+
+window.openOrderHistory = async () => {
+  const modal = document.getElementById('orderHistoryModal');
+  if (!modal) return;
+  modal.classList.add('open');
+  renderOrderHistory(true);
+
+  try {
+    orderHistory = await OrdersAPI.getHistory();
+    renderOrderHistory(false);
+  } catch (e) {
+    const body = document.getElementById('orderHistoryBody');
+    if (body) {
+      body.innerHTML = `<div class="history-empty">Failed to load orders: ${escapeHtml(e.message || 'Unknown error')}</div>`;
+    }
+  }
+};
+
+window.closeOrderHistory = (evt) => {
+  if (evt && evt.target && evt.target.id !== 'orderHistoryModal') return;
+  const modal = document.getElementById('orderHistoryModal');
+  if (modal) modal.classList.remove('open');
+};
+
+function renderOrderHistory(isLoading = false) {
+  const body = document.getElementById('orderHistoryBody');
+  if (!body) return;
+  if (isLoading) {
+    body.innerHTML = '<div class="history-empty">Loading order history…</div>';
+    return;
+  }
+
+  if (!orderHistory.length) {
+    body.innerHTML = '<div class="history-empty">No orders yet. Place an order to see it here.</div>';
+    return;
+  }
+
+  const rows = orderHistory.map((o) => {
+    const id = o.id || o._id || '-';
+    const created = o.createdAt ? new Date(o.createdAt).toLocaleString() : '-';
+    const total = Number(o.total) || 0;
+    const itemCount = Array.isArray(o.items) ? o.items.reduce((sum, it) => sum + (Number(it.qty) || 0), 0) : 0;
+    const status = (o.status || 'completed').toString();
+
+    return `
+      <tr>
+        <td class="history-id">${escapeHtml(id)}</td>
+        <td>${itemCount}</td>
+        <td>${escapeHtml(created)}</td>
+        <td class="history-total">$${total.toLocaleString()}</td>
+        <td><span class="history-status">${escapeHtml(status)}</span></td>
+      </tr>
+    `;
+  }).join('');
+
+  body.innerHTML = `
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Items</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 /* ── Enter key on login ───────────────────────────────── */
 document.addEventListener('keydown', e => {

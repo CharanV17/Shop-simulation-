@@ -32,6 +32,7 @@ async function refreshData() {
     renderDashboard();
     renderShops();
     renderProducts();
+    renderOrders();
   } catch (e) {
     alert('Failed to fetch admin data: ' + e.message);
   }
@@ -91,6 +92,41 @@ async function renderProducts() {
       </td>
     </tr>
   `).join('');
+}
+
+async function renderOrders() {
+  const orders = await AdminAPI.getOrders();
+  const tbody = document.querySelector('#table-orders tbody');
+  if (!tbody) return;
+
+  if (!orders.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="color:rgba(255,255,255,.5)">No orders yet.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = orders.map(o => {
+    const orderId = o.id || o._id || '-';
+    const user = o.userName || o.userId || '-';
+    const items = Array.isArray(o.items) ? o.items.reduce((sum, it) => sum + (Number(it.qty) || 0), 0) : 0;
+    const total = Number(o.total) || 0;
+    const status = o.status || 'completed';
+    const created = o.createdAt ? new Date(o.createdAt).toLocaleString() : '-';
+
+    return `
+      <tr>
+        <td style="font-family:var(--font-m)">${orderId}</td>
+        <td>${user}</td>
+        <td>${items}</td>
+        <td style="color:var(--neon);font-weight:700">$${total.toLocaleString()}</td>
+        <td><span class="badge badge-neon">${status}</span></td>
+        <td>${created}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // Global modal helpers

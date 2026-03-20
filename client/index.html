@@ -114,6 +114,24 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .user-info-role{font-size:.6rem;font-family:var(--font-m);color:rgba(255,255,255,.3);}
 .nav-btn{padding:8px 15px;background:var(--glass);border:1px solid var(--border);border-radius:3px;color:var(--white);font-size:.75rem;font-weight:600;cursor:pointer;font-family:var(--font-d);transition:all .18s;display:flex;align-items:center;gap:6px;}
 .nav-btn:hover{border-color:var(--neon);color:var(--neon);}
+
+/* Order history modal */
+.history-modal{position:fixed;inset:0;background:rgba(0,0,0,.76);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:80;padding:24px;}
+.history-modal.open{display:flex;}
+.history-card{width:min(900px,100%);max-height:80vh;overflow:auto;background:#0d0d16;border:1px solid var(--border);border-radius:8px;}
+.history-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border);}
+.history-title{font-size:1.25rem;font-weight:800;letter-spacing:-.02em;}
+.history-sub{font-size:.65rem;font-family:var(--font-m);color:rgba(255,255,255,.4);letter-spacing:.12em;text-transform:uppercase;}
+.history-close{padding:7px 12px;border:1px solid var(--border);background:var(--glass);border-radius:4px;color:var(--white);cursor:pointer;font-size:.72rem;font-weight:700;}
+.history-close:hover{border-color:var(--neon);color:var(--neon);}
+.history-body{padding:14px 20px 20px;}
+.history-empty{padding:14px 0;color:rgba(255,255,255,.55);font-family:var(--font-m);font-size:.75rem;}
+.history-table{width:100%;border-collapse:collapse;}
+.history-table th{text-align:left;padding:10px 8px;font-size:.62rem;font-family:var(--font-m);text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);border-bottom:1px solid var(--border);}
+.history-table td{padding:12px 8px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.8rem;}
+.history-id{font-family:var(--font-m);color:rgba(255,255,255,.8);}
+.history-total{color:var(--neon);font-weight:700;}
+.history-status{display:inline-block;padding:3px 7px;border-radius:4px;background:rgba(0,255,179,.12);color:var(--neon);font-size:.64rem;font-family:var(--font-m);font-weight:700;text-transform:uppercase;}
 /* Hero */
 .lobby-hero{padding:80px 40px 56px;text-align:center;}
 .hero-eyebrow{font-family:var(--font-m);font-size:.68rem;letter-spacing:.3em;color:rgba(255,255,255,.28);text-transform:uppercase;margin-bottom:1.2rem;}
@@ -153,6 +171,13 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
+
+@media(max-width:720px){
+  .history-modal{padding:10px;}
+  .history-head{padding:14px 14px;}
+  .history-body{padding:10px 14px 16px;}
+  .history-table th:nth-child(3),.history-table td:nth-child(3){display:none;}
+}
 </style>
 </head>
 <body>
@@ -258,6 +283,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
           <div class="user-info-role" id="userRoleLabel">USER</div>
         </div>
       </div>
+      <button class="nav-btn" onclick="window.openOrderHistory()">Orders</button>
       <button class="nav-btn" id="adminBtn" style="display:none;" onclick="window.goAdmin()">⚙ Admin</button>
       <button class="nav-btn" onclick="window.handleLogout()">Sign Out</button>
     </div>
@@ -285,6 +311,19 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       <div class="shops-grid" id="shopsGrid"></div>
     </section>
 
+  </div>
+</div>
+
+<div class="history-modal" id="orderHistoryModal" onclick="window.closeOrderHistory(event)">
+  <div class="history-card" role="dialog" aria-modal="true" aria-label="Order History">
+    <div class="history-head">
+      <div>
+        <div class="history-title">Order History</div>
+        <div class="history-sub">All your completed purchases</div>
+      </div>
+      <button class="history-close" onclick="window.closeOrderHistory()">Close</button>
+    </div>
+    <div class="history-body" id="orderHistoryBody"></div>
   </div>
 </div>
 

@@ -22,16 +22,25 @@ const productSchema = new mongoose.Schema({
 
 // Seed default products
 productSchema.statics.seedDefaults = async function (shopsData) {
-  const count = await this.countDocuments();
-  if (count === 0) {
-    const products = [];
-    shopsData.forEach(shop => {
-      shop.products.forEach(p => {
-        products.push({ ...p, shopId: shop.id });
-      });
+  const defaults = [];
+  shopsData.forEach(shop => {
+    shop.products.forEach(p => {
+      defaults.push({ ...p, shopId: shop.id });
     });
-    await this.create(products);
-    console.log(`  🌱  Products seeded (${products.length} products)`);
+  });
+
+  const existing = await this.find({}, { id: 1, _id: 0 }).lean();
+  const existingIds = new Set(existing.map(p => p.id));
+  const missing = defaults.filter(p => !existingIds.has(p.id));
+
+  if (missing.length > 0) {
+    await this.insertMany(missing, { ordered: false });
+  }
+
+  if (existing.length === 0) {
+    console.log(`  🌱  Products seeded (${defaults.length} products)`);
+  } else if (missing.length > 0) {
+    console.log(`  🌱  Products backfilled (${missing.length} missing defaults)`);
   }
 };
 

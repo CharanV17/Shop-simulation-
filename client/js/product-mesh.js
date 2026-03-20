@@ -51,13 +51,113 @@ const FRESH_MARKET_SLOTS = [
   { x:  3.0, y: 0.78, z: -6.08 }
 ];
 
+const GOURMET_MARKET_SLOTS = [
+  // Center round counter (front arc)
+  { x: -1.2, y: 1.23, z: -2.25, ry: 0.08 },
+  { x: -0.7, y: 1.23, z: -2.05, ry: 0.04 },
+  { x: -0.2, y: 1.23, z: -1.95, ry: 0.0 },
+  { x:  0.3, y: 1.23, z: -1.98, ry: -0.02 },
+  { x:  0.8, y: 1.23, z: -2.1, ry: -0.04 },
+  { x:  1.3, y: 1.23, z: -2.32, ry: -0.08 },
+
+  // Left display island
+  { x: -8.55, y: 1.22, z: 2.2, ry: 0.56 },
+  { x: -8.05, y: 1.22, z: 2.43, ry: 0.52 },
+  { x: -7.45, y: 1.22, z: 2.5, ry: 0.48 },
+  { x: -6.9, y: 1.22, z: 2.35, ry: 0.44 },
+  { x: -6.45, y: 1.22, z: 2.08, ry: 0.4 },
+  { x: -6.15, y: 1.22, z: 1.7, ry: 0.36 },
+
+  // Right display island
+  { x:  6.2, y: 1.2, z: 2.0, ry: -0.38 },
+  { x:  6.55, y: 1.2, z: 2.35, ry: -0.42 },
+  { x:  7.05, y: 1.2, z: 2.56, ry: -0.46 },
+  { x:  7.6, y: 1.2, z: 2.58, ry: -0.5 },
+  { x:  8.1, y: 1.2, z: 2.43, ry: -0.54 },
+  { x:  8.55, y: 1.2, z: 2.1, ry: -0.58 }
+];
+
+const ART_GALLERY_SLOTS = [
+  // Rear left table
+  { x: -5.15, y: 0.84, z: -3.55, ry: 0.06 },
+  { x: -4.25, y: 0.84, z: -3.45, ry: 0.02 },
+  { x: -3.35, y: 0.84, z: -3.55, ry: -0.04 },
+
+  // Rear center table
+  { x: -0.35, y: 0.84, z: -3.8, ry: 0.08 },
+  { x:  0.55, y: 0.84, z: -3.68, ry: 0.02 },
+  { x:  1.45, y: 0.84, z: -3.8, ry: -0.05 },
+
+  // Front-side floor display area
+  { x: -2.0, y: 0.84, z: -1.9, ry: 0.1 },
+  { x: -0.8, y: 0.84, z: -1.95, ry: 0.05 },
+  { x:  0.4, y: 0.84, z: -2.0, ry: -0.04 },
+
+  // Plinth positions
+  { x: -6.9, y: 0.92, z: -1.0, ry: 0.18 },
+  { x:  3.7, y: 0.9,  z:  1.9, ry: -0.14 },
+  { x:  6.8, y: 0.98, z: -1.3, ry: -0.2 }
+];
+
+const ART_GALLERY_WALL_SLOTS = {
+  'digital genesis print': { x: -3.0, y: 3.95, z: -8.7, ry: 0.0, wallMounted: true },
+  'kinetic wall art':      { x:  0.0, y: 3.9,  z: -8.7, ry: 0.0, wallMounted: true },
+  'neo-brutalist poster':  { x:  3.0, y: 3.85, z: -8.7, ry: 0.0, wallMounted: true }
+};
+
+const FASHION_DISTRICT_SLOTS = [
+  // Front couture line
+  { x: -6.2, y: 0.92, z: -2.0, ry: 0.18 },
+  { x: -3.9, y: 0.92, z: -2.1, ry: 0.1 },
+  { x: -1.7, y: 0.92, z: -2.15, ry: 0.04 },
+  { x:  0.6, y: 0.92, z: -2.2, ry: -0.04 },
+  { x:  2.9, y: 0.92, z: -2.15, ry: -0.1 },
+  { x:  5.2, y: 0.92, z: -2.0, ry: -0.16 },
+
+  // Side rack accents
+  { x: -8.7, y: 1.0, z: -0.6, ry: 0.5 },
+  { x: -8.2, y: 1.0, z: 1.0, ry: 0.45 },
+  { x:  8.2, y: 1.0, z: 0.8, ry: -0.45 },
+  { x:  8.7, y: 1.0, z: -0.9, ry: -0.5 },
+
+  // Center display case top
+  { x: -0.9, y: 1.14, z: -2.9, ry: 0.1 },
+  { x:  0.2, y: 1.14, z: -2.82, ry: 0.0 },
+  { x:  1.1, y: 1.14, z: -2.9, ry: -0.1 }
+];
+
+const FASHION_DISTRICT_NAME_SLOTS = {
+  // Place each fashion product on dedicated display points (away from mannequin bodies)
+  'silk noir blazer':   { x: -8.9, y: 1.45, z: -1.2, ry: 0.28, absoluteY: true },
+  'crystal heels':      { x: -1.5, y: 0.93, z: -1.9, ry: 0.18, absoluteY: true },
+  'velvet weekender':   { x: -0.5, y: 0.95, z: -1.9, ry: 0.04, absoluteY: true },
+  'aurora sunglasses':  { x:  0.5, y: 0.92, z: -1.9, ry: -0.06, absoluteY: true },
+  'cashmere wrap':      { x:  1.5, y: 0.93, z: -1.9, ry: -0.14, absoluteY: true },
+  'neo bomber jacket':  { x:  8.9, y: 1.42, z: -1.2, ry: -0.28, absoluteY: true },
+  'midnight satin dress': { x: -10.1, y: 1.46, z: -1.22, ry: 0.34, absoluteY: true },
+  'ivory pleated gown':   { x: -7.7, y: 1.47, z: -1.18, ry: 0.22, absoluteY: true },
+  'urban denim trench':   { x: 10.1, y: 1.45, z: -1.2, ry: -0.34, absoluteY: true },
+  'velour cropped hoodie': { x: 7.7, y: 1.4, z: -1.18, ry: -0.22, absoluteY: true }
+};
+
 /* ── Main builder ─────────────────────────────────────── */
 export async function buildProductMeshes(scene, products, theme) {
   for (let i = 0; i < products.length; i++) {
     const product = products[i];
     const isFreshMarket = product.shopId === 'fresh-market';
-    const slotSet = isFreshMarket ? FRESH_MARKET_SLOTS : SLOTS;
-    const slot    = slotSet[i % slotSet.length];
+    const isGourmetMarket = product.shopId === 'gourmet-market';
+    const isArtGallery = product.shopId === 'art-gallery';
+    const isFashionDistrict = product.shopId === 'fashion-district';
+    const slotSet = isFreshMarket
+      ? FRESH_MARKET_SLOTS
+      : isGourmetMarket
+        ? GOURMET_MARKET_SLOTS
+        : isArtGallery
+          ? ART_GALLERY_SLOTS
+          : isFashionDistrict
+            ? FASHION_DISTRICT_SLOTS
+            : SLOTS;
+    let slot      = slotSet[i % slotSet.length];
     if (!slot) continue;
 
     const group = new THREE.Group();
@@ -67,6 +167,14 @@ export async function buildProductMeshes(scene, products, theme) {
     const d    = product.dimensions || { w: 0.45, h: 0.45, d: 0.45 };
     const cat  = (product.category || 'General').toLowerCase();
     const name = (product.name || '').toLowerCase();
+
+    if (isArtGallery && ART_GALLERY_WALL_SLOTS[name]) {
+      slot = ART_GALLERY_WALL_SLOTS[name];
+    }
+
+    if (isFashionDistrict && FASHION_DISTRICT_NAME_SLOTS[name]) {
+      slot = FASHION_DISTRICT_NAME_SLOTS[name];
+    }
 
     if (isFreshMarket) {
       // ── Wooden Crate + Pile of Produce ───────────────
@@ -127,11 +235,15 @@ export async function buildProductMeshes(scene, products, theme) {
     group.userData.glowLight = glow;
 
     // ── Final Positioning ─────────────────────────────
-    const posY = isFreshMarket ? slot.y + 0.26 : slot.y + d.h / 2 + 0.05;
+    const posY = isFreshMarket
+      ? slot.y + 0.26
+      : (slot.wallMounted || slot.absoluteY)
+        ? slot.y
+        : slot.y + d.h / 2 + 0.03;
     group.position.set(slot.x, posY, slot.z);
     group.userData.baseY   = posY;
-    group.userData.animate = false; // crates don't float
-    group.rotation.y       = (Math.random() - 0.5) * 0.4;
+    group.userData.animate = !(isFreshMarket || isGourmetMarket || isArtGallery || isFashionDistrict);
+    group.rotation.y       = typeof slot.ry === 'number' ? slot.ry : (Math.random() - 0.5) * 0.4;
 
     scene.add(group);
     PRODUCT_MESHES.push(group);
@@ -476,6 +588,9 @@ function createProductMeshParts(cat, name, d, color) {
   if (name.includes('watch')) {
     return createWatchModel(d, color);
   }
+  if (name.includes('retinalvr') || name.includes('retinal vr')) {
+    return createRetinalVRHeadsetModel(d, color);
+  }
   if (name.includes('headset') || name.includes('vr')) {
     return createVRModel(d, color);
   }
@@ -730,6 +845,92 @@ function createVRModel(d, color) {
   strap.rotation.x = -Math.PI / 2;
   strap.position.z = -d.d * 0.1;
   parts.push(strap);
+
+  return parts;
+}
+
+function createRetinalVRHeadsetModel(d, color) {
+  const parts = [];
+  const shellMat = new THREE.MeshStandardMaterial({ color: 0x0b0d12, roughness: 0.24, metalness: 0.82 });
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x171a22, roughness: 0.38, metalness: 0.58 });
+  const lensMat = new THREE.MeshPhysicalMaterial({
+    color: 0x111318,
+    roughness: 0.03,
+    metalness: 0.0,
+    transmission: 0.65,
+    thickness: 0.08,
+    ior: 1.46,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.05,
+    transparent: true,
+    opacity: 0.95
+  });
+  const trimMat = new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x00d2ff, emissiveIntensity: 0.55, roughness: 0.2, metalness: 0.95 });
+  const strapMat = new THREE.MeshStandardMaterial({ color: 0x20242e, roughness: 0.85, metalness: 0.12 });
+
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(d.w * 0.94, d.h * 0.48, d.d * 0.54), shellMat);
+  visor.position.y = d.h * 0.01;
+  parts.push(visor);
+
+  // Curved brow ridge to break the boxy silhouette.
+  const browRidge = new THREE.Mesh(
+    new THREE.CylinderGeometry(d.w * 0.46, d.w * 0.46, d.h * 0.08, 28, 1, false, Math.PI * 0.18, Math.PI * 0.64),
+    bodyMat
+  );
+  browRidge.rotation.z = Math.PI / 2;
+  browRidge.position.set(0, d.h * 0.16, d.d * 0.04);
+  parts.push(browRidge);
+
+  const lowerBody = new THREE.Mesh(new THREE.BoxGeometry(d.w * 0.78, d.h * 0.16, d.d * 0.48), bodyMat);
+  lowerBody.position.y = -d.h * 0.14;
+  parts.push(lowerBody);
+
+  const frontLens = new THREE.Mesh(new THREE.BoxGeometry(d.w * 0.84, d.h * 0.34, 0.016), lensMat);
+  frontLens.position.z = d.d * 0.27;
+  parts.push(frontLens);
+
+  const trimTop = new THREE.Mesh(new THREE.BoxGeometry(d.w * 0.78, 0.014, 0.014), trimMat);
+  trimTop.position.set(0, d.h * 0.18, d.d * 0.275);
+  parts.push(trimTop);
+
+  const trimBottom = trimTop.clone();
+  trimBottom.position.y = -d.h * 0.11;
+  parts.push(trimBottom);
+
+  // Slim side arms (instead of speaker-like side pods)
+  const sideArm = new THREE.Mesh(new THREE.BoxGeometry(d.w * 0.1, d.h * 0.1, d.d * 0.34), bodyMat);
+  sideArm.position.set(-d.w * 0.5, d.h * 0.02, -d.d * 0.04);
+  sideArm.rotation.y = 0.22;
+  parts.push(sideArm);
+
+  const sideArmR = sideArm.clone();
+  sideArmR.position.x = d.w * 0.5;
+  sideArmR.rotation.y = -0.22;
+  parts.push(sideArmR);
+
+  const headBand = new THREE.Mesh(
+    new THREE.TorusGeometry(d.w * 0.45, 0.026, 12, 36, Math.PI),
+    strapMat
+  );
+  headBand.rotation.x = -Math.PI / 2;
+  headBand.position.set(0, d.h * 0.19, -d.d * 0.14);
+  parts.push(headBand);
+
+  const topStrap = new THREE.Mesh(new THREE.BoxGeometry(0.04, d.h * 0.34, 0.016), strapMat);
+  topStrap.position.set(0, d.h * 0.15, -d.d * 0.15);
+  parts.push(topStrap);
+
+  const backPad = new THREE.Mesh(new THREE.BoxGeometry(d.w * 0.34, d.h * 0.12, d.d * 0.06), new THREE.MeshStandardMaterial({ color: 0x2a2f39, roughness: 0.9, metalness: 0.08 }));
+  backPad.position.set(0, d.h * 0.08, -d.d * 0.52);
+  parts.push(backPad);
+
+  const sensorL = new THREE.Mesh(new THREE.SphereGeometry(0.018, 10, 8), trimMat);
+  sensorL.position.set(-d.w * 0.2, d.h * 0.02, d.d * 0.27);
+  parts.push(sensorL);
+
+  const sensorR = sensorL.clone();
+  sensorR.position.x = d.w * 0.2;
+  parts.push(sensorR);
 
   return parts;
 }
