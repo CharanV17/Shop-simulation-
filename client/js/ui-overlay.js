@@ -270,12 +270,11 @@ function renderCheckout() {
       <div class="ck-form">
         <div class="ck-field"><label>Cardholder Name</label><input id="ckName" placeholder="Full name"/></div>
         <div class="ck-field"><label>Card Number</label>
-          <input id="ckCard" placeholder="4242 4242 4242 4242" maxlength="19"
-            oninput="this.value=this.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim().slice(0,19)"/>
+          <input id="ckCard" placeholder="4242 4242 4242 4242" maxlength="19" inputmode="numeric" autocomplete="cc-number"/>
         </div>
         <div class="ck-row">
-          <div class="ck-field"><label>Expiry</label><input id="ckExp" placeholder="MM/YY" maxlength="5"/></div>
-          <div class="ck-field"><label>CVV</label><input id="ckCvv" placeholder="123" maxlength="3"/></div>
+          <div class="ck-field"><label>Expiry</label><input id="ckExp" placeholder="MM/YY" maxlength="5" inputmode="numeric" autocomplete="cc-exp"/></div>
+          <div class="ck-field"><label>CVV</label><input id="ckCvv" placeholder="123" maxlength="3" inputmode="numeric" autocomplete="cc-csc"/></div>
         </div>
         <div class="ck-field"><label>Shipping Address</label><input id="ckAddr" placeholder="123 Main St, City"/></div>
       </div>
@@ -285,6 +284,7 @@ function renderCheckout() {
       </button>
       <button class="btn-ck-back" onclick="checkoutStep=0;renderCheckout()">← Back</button>
     `;
+    wireCheckoutInputs();
   } else {
     body.innerHTML = stepsH + `
       <div class="ck-success">
@@ -298,6 +298,32 @@ function renderCheckout() {
         <button class="btn-ck-cancel" onclick="window._uiCloseCheckout()">Close</button>
       </div>
     `;
+  }
+}
+
+function wireCheckoutInputs() {
+  const cardInput = document.getElementById('ckCard');
+  const expInput = document.getElementById('ckExp');
+  const cvvInput = document.getElementById('ckCvv');
+
+  if (cardInput) {
+    cardInput.addEventListener('input', () => {
+      const digits = cardInput.value.replace(/\D/g, '').slice(0, 16);
+      cardInput.value = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    });
+  }
+
+  if (expInput) {
+    expInput.addEventListener('input', () => {
+      const digits = expInput.value.replace(/\D/g, '').slice(0, 4);
+      expInput.value = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+    });
+  }
+
+  if (cvvInput) {
+    cvvInput.addEventListener('input', () => {
+      cvvInput.value = cvvInput.value.replace(/\D/g, '').slice(0, 3);
+    });
   }
 }
 
