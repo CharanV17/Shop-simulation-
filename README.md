@@ -2,10 +2,6 @@
 
 NEXUS VR is a full-stack virtual shopping platform with a 3D storefront experience built using Three.js on the client and Node.js + Express + MongoDB on the server.
 
-## Live Demo
-Deployed on Render: 
-- https://shop-simulation.onrender.com
-
 ## Features
 
 - 3D shop environments with category-specific styling
